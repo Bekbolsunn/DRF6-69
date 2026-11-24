@@ -19,7 +19,8 @@ from .serializers import (
 )
 
 PAGE_SIZE = 5
-
+from rest_framework import permissions
+from common.permissions import CanEditWithIn15Minutes, IsAnon, IsAuth
 
 class CustomPagination(PageNumberPagination):
     def get_paginated_response(self, data):
@@ -68,6 +69,7 @@ class ProductListCreateAPIView(ListCreateAPIView):
     queryset = Product.objects.select_related('category').all()
     serializer_class = ProductSerializer
     pagination_class = CustomPagination
+    permission_classes = [IsAuth | IsAnon]
 
     def post(self, request, *args, **kwargs):
         serializer = ProductValidateSerializer(data=request.data)
@@ -95,6 +97,7 @@ class ProductDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.select_related('category').all()
     serializer_class = ProductSerializer
     lookup_field = 'id'
+    permission_classes = [IsAnon | (IsAuth & CanEditWithIn15Minutes)]
 
     def put(self, request, *args, **kwargs):
         product = self.get_object()
